@@ -96,15 +96,30 @@ export default function Home() {
       return
     }
 
+    // Check localStorage space before processing
+    const storageCheck = checkLocalStorageSpace()
+    if (!storageCheck.available) {
+      alert(storageCheck.message)
+      return
+    }
+
     setIsLoading(true)
     
     try {
       console.log('Processing before image:', beforeImage.name, 'Size:', beforeImage.size, 'Type:', beforeImage.type)
       console.log('Processing after image:', afterImage.name, 'Size:', afterImage.size, 'Type:', afterImage.type)
       
-      // Convert images to data URLs
-      const beforeImageUrl = await convertFileToDataURL(beforeImage)
-      const afterImageUrl = await convertFileToDataURL(afterImage)
+      // Compress images to reduce storage size
+      console.log('Compressing images...')
+      const compressedBeforeImage = await compressImage(beforeImage, 1200, 0.7)
+      const compressedAfterImage = await compressImage(afterImage, 1200, 0.7)
+      
+      console.log('Compressed before image size:', compressedBeforeImage.size)
+      console.log('Compressed after image size:', compressedAfterImage.size)
+      
+      // Convert compressed images to data URLs
+      const beforeImageUrl = await convertFileToDataURL(compressedBeforeImage)
+      const afterImageUrl = await convertFileToDataURL(compressedAfterImage)
       
       console.log('Successfully converted images to data URLs')
       
@@ -119,9 +134,13 @@ export default function Home() {
       }
       
       // Store in localStorage for the showcase page
-      localStorage.setItem(`client_${clientData.id}`, JSON.stringify(clientData))
-      
-      console.log('Client data stored successfully')
+      try {
+        localStorage.setItem(`client_${clientData.id}`, JSON.stringify(clientData))
+        console.log('Client data stored successfully')
+      } catch (storageError) {
+        console.error('localStorage error:', storageError)
+        throw new Error('Storage space exceeded. Please try with smaller images or clear browser data.')
+      }
       
       // Simulate processing time
       setTimeout(() => {
@@ -142,6 +161,10 @@ export default function Home() {
           errorMessage = 'Unable to read image file. Please try a different image or format (JPG, PNG).'
         } else if (error.message.includes('File must be an image')) {
           errorMessage = 'Please select valid image files only.'
+        } else if (error.message.includes('Storage space exceeded')) {
+          errorMessage = 'Storage space exceeded. Please try with smaller images or clear browser data.'
+        } else if (error.message.includes('Failed to compress')) {
+          errorMessage = 'Failed to compress image. Please try a different image.'
         } else {
           errorMessage = `Image processing error: ${error.message}`
         }
@@ -150,6 +173,47 @@ export default function Home() {
       alert(errorMessage)
       setIsLoading(false)
     }
+  }
+
+  const compressImage = (file: File, maxWidth: number = 1200, quality: number = 0.8): Promise<File> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      const img = new Image()
+      
+      img.onload = () => {
+        // Calculate new dimensions while maintaining aspect ratio
+        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height)
+        const newWidth = img.width * ratio
+        const newHeight = img.height * ratio
+        
+        canvas.width = newWidth
+        canvas.height = newHeight
+        
+        // Draw and compress the image
+        ctx?.drawImage(img, 0, 0, newWidth, newHeight)
+        
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              // Create a new file with compressed data
+              const compressedFile = new File([blob], file.name, {
+                type: 'image/jpeg',
+                lastModified: Date.now()
+              })
+              resolve(compressedFile)
+            } else {
+              reject(new Error('Failed to compress image'))
+            }
+          },
+          'image/jpeg',
+          quality
+        )
+      }
+      
+      img.onerror = () => reject(new Error('Failed to load image for compression'))
+      img.src = URL.createObjectURL(file)
+    })
   }
 
   const convertFileToDataURL = (file: File): Promise<string> => {
@@ -207,6 +271,24 @@ export default function Home() {
         reject(new Error('Failed to start image processing'))
       }
     })
+  }
+
+  const checkLocalStorageSpace = (): { available: boolean; message?: string } => {
+    try {
+      // Test localStorage by trying to store a small amount of data
+      const testKey = 'storage_test_' + Date.now()
+      const testData = 'x'.repeat(1024 * 1024) // 1MB test data
+      
+      localStorage.setItem(testKey, testData)
+      localStorage.removeItem(testKey)
+      
+      return { available: true }
+    } catch (error) {
+      return { 
+        available: false, 
+        message: 'Browser storage is full. Please clear some data or try with smaller images.' 
+      }
+    }
   }
 
   const generateClientId = () => {
@@ -353,7 +435,7 @@ export default function Home() {
                         <div>
                           <p className="text-white font-semibold mobile-text-lg">Upload Before Photo</p>
                           <p className="text-gray-400 mt-2 mobile-text-sm">Click to browse files or take photo</p>
-                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • iPhone: Use &quot;Most Compatible&quot; format</p>
+                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • Auto-compressed for storage</p>
                         </div>
                         {beforeImage && (
                           <div className="mt-4 p-3 bg-green-500/20 rounded-lg border border-green-500/30">
@@ -392,7 +474,7 @@ export default function Home() {
                         <div>
                           <p className="text-white font-semibold mobile-text-lg">Upload After Photo</p>
                           <p className="text-gray-400 mt-2 mobile-text-sm">Click to browse files or take photo</p>
-                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • iPhone: Use &quot;Most Compatible&quot; format</p>
+                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • Auto-compressed for storage</p>
                         </div>
                         {afterImage && (
                           <div className="mt-4 p-3 bg-green-500/20 rounded-lg border border-green-500/30">
@@ -471,6 +553,10 @@ export default function Home() {
                           <div className="flex items-start">
                             <span className="text-green-400 mr-2 text-xs">•</span>
                             <p className="text-gray-300 text-xs">Clear, well-lit photos</p>
+                          </div>
+                          <div className="flex items-start">
+                            <span className="text-green-400 mr-2 text-xs">•</span>
+                            <p className="text-gray-300 text-xs">Images auto-compressed for storage</p>
                           </div>
                         </div>
                       </div>

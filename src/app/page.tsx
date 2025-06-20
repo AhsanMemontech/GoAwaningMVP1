@@ -29,6 +29,15 @@ export default function Home() {
     
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       const file = e.dataTransfer.files[0]
+      
+      // Validate the file
+      const validation = validateImageFile(file)
+      if (!validation.valid) {
+        alert(validation.error)
+        return
+      }
+
+      // Set the image
       if (type === 'before') {
         setBeforeImage(file)
       } else {
@@ -37,9 +46,41 @@ export default function Home() {
     }
   }
 
+  const validateImageFile = (file: File): { valid: boolean; error?: string } => {
+    // Check if it's an image
+    if (!file.type.startsWith('image/')) {
+      return { valid: false, error: 'Please select a valid image file' }
+    }
+
+    // Check file size (10MB limit)
+    const maxSize = 10 * 1024 * 1024 // 10MB
+    if (file.size > maxSize) {
+      return { valid: false, error: 'Image file is too large. Please use an image smaller than 10MB.' }
+    }
+
+    // Check for supported formats
+    const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/heic', 'image/heif', 'image/webp']
+    if (!supportedTypes.includes(file.type.toLowerCase())) {
+      return { valid: false, error: 'Unsupported image format. Please use JPG, PNG, HEIC, or WebP.' }
+    }
+
+    return { valid: true }
+  }
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>, type: 'before' | 'after') => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
+      
+      // Validate the file
+      const validation = validateImageFile(file)
+      if (!validation.valid) {
+        alert(validation.error)
+        // Reset the input
+        e.target.value = ''
+        return
+      }
+
+      // Set the image
       if (type === 'before') {
         setBeforeImage(file)
       } else {
@@ -58,9 +99,14 @@ export default function Home() {
     setIsLoading(true)
     
     try {
+      console.log('Processing before image:', beforeImage.name, 'Size:', beforeImage.size, 'Type:', beforeImage.type)
+      console.log('Processing after image:', afterImage.name, 'Size:', afterImage.size, 'Type:', afterImage.type)
+      
       // Convert images to data URLs
       const beforeImageUrl = await convertFileToDataURL(beforeImage)
       const afterImageUrl = await convertFileToDataURL(afterImage)
+      
+      console.log('Successfully converted images to data URLs')
       
       // Create client data
       const clientData = {
@@ -75,23 +121,91 @@ export default function Home() {
       // Store in localStorage for the showcase page
       localStorage.setItem(`client_${clientData.id}`, JSON.stringify(clientData))
       
+      console.log('Client data stored successfully')
+      
       // Simulate processing time
       setTimeout(() => {
         router.push(`/showcase/${clientData.id}`)
       }, 2000)
     } catch (error) {
       console.error('Error processing images:', error)
-      alert('Error processing images. Please try again.')
+      
+      // Provide more specific error messages
+      let errorMessage = 'Error processing images. Please try again.'
+      
+      if (error instanceof Error) {
+        if (error.message.includes('too large')) {
+          errorMessage = 'Image file is too large. Please use images smaller than 10MB.'
+        } else if (error.message.includes('timed out')) {
+          errorMessage = 'Image processing took too long. Please try smaller images or check your connection.'
+        } else if (error.message.includes('Failed to read')) {
+          errorMessage = 'Unable to read image file. Please try a different image or format (JPG, PNG).'
+        } else if (error.message.includes('File must be an image')) {
+          errorMessage = 'Please select valid image files only.'
+        } else {
+          errorMessage = `Image processing error: ${error.message}`
+        }
+      }
+      
+      alert(errorMessage)
       setIsLoading(false)
     }
   }
 
   const convertFileToDataURL = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        reject(new Error('File must be an image'))
+        return
+      }
+
+      // Check file size (10MB limit)
+      const maxSize = 10 * 1024 * 1024 // 10MB
+      if (file.size > maxSize) {
+        reject(new Error('Image file is too large. Please use an image smaller than 10MB.'))
+        return
+      }
+
       const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
+      
+      reader.onload = () => {
+        try {
+          const result = reader.result as string
+          if (!result || result.length === 0) {
+            reject(new Error('Failed to read image file'))
+            return
+          }
+          resolve(result)
+        } catch (error) {
+          reject(new Error('Error processing image file'))
+        }
+      }
+      
+      reader.onerror = () => {
+        reject(new Error('Failed to read image file. Please try a different image.'))
+      }
+      
+      reader.onabort = () => {
+        reject(new Error('Image reading was cancelled'))
+      }
+
+      // Add timeout for large files
+      const timeout = setTimeout(() => {
+        reader.abort()
+        reject(new Error('Image processing timed out. Please try a smaller image.'))
+      }, 30000) // 30 second timeout
+
+      reader.onloadend = () => {
+        clearTimeout(timeout)
+      }
+
+      try {
+        reader.readAsDataURL(file)
+      } catch (error) {
+        clearTimeout(timeout)
+        reject(new Error('Failed to start image processing'))
+      }
     })
   }
 
@@ -239,7 +353,7 @@ export default function Home() {
                         <div>
                           <p className="text-white font-semibold mobile-text-lg">Upload Before Photo</p>
                           <p className="text-gray-400 mt-2 mobile-text-sm">Click to browse files or take photo</p>
-                          <p className="text-xs text-gray-500 mt-1">PNG, JPG, HEIC up to 10MB</p>
+                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • iPhone: Use "Most Compatible" format</p>
                         </div>
                         {beforeImage && (
                           <div className="mt-4 p-3 bg-green-500/20 rounded-lg border border-green-500/30">
@@ -278,7 +392,7 @@ export default function Home() {
                         <div>
                           <p className="text-white font-semibold mobile-text-lg">Upload After Photo</p>
                           <p className="text-gray-400 mt-2 mobile-text-sm">Click to browse files or take photo</p>
-                          <p className="text-xs text-gray-500 mt-1">PNG, JPG, HEIC up to 10MB</p>
+                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • iPhone: Use "Most Compatible" format</p>
                         </div>
                         {afterImage && (
                           <div className="mt-4 p-3 bg-green-500/20 rounded-lg border border-green-500/30">
@@ -315,6 +429,10 @@ export default function Home() {
                           <div className="flex items-start">
                             <span className="text-blue-400 mr-2 text-xs">•</span>
                             <p className="text-gray-300 text-xs">Ensure good lighting</p>
+                          </div>
+                          <div className="flex items-start">
+                            <span className="text-blue-400 mr-2 text-xs">•</span>
+                            <p className="text-gray-300 text-xs">iPhone: Use "Most Compatible" format in Settings</p>
                           </div>
                         </div>
                       </div>

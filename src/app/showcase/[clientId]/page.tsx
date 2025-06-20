@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 interface ClientData {
   id: string
@@ -132,10 +133,18 @@ export default function ClientShowcase() {
         {/* Hero Section */}
         <div className="text-center mb-8 md:mb-16 mobile-slide-in">
           {/* Logo/Brand */}
-          <div className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl md:rounded-3xl mb-6 md:mb-8 shadow-2xl transform hover:scale-105 transition-all duration-500 touch-target">
-            <svg className="w-8 h-8 md:w-12 md:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl md:rounded-3xl mb-6 md:mb-8 shadow-2xl transform hover:scale-105 transition-all duration-500 touch-target overflow-hidden relative">
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 via-white/50 to-gray-100/50"></div>
+            {/* Subtle blue accent */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-blue-100/30 via-transparent to-purple-100/30"></div>
+            <Image 
+              src="/GoAwningIcon.jpg" 
+              alt="Go Awning Logo" 
+              width={48} 
+              height={48} 
+              className="w-20 h-20 md:w-18 md:h-18 object-contain relative z-10"
+            />
           </div>
 
           {/* Main Heading */}

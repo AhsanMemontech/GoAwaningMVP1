@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 
 export default function Home() {
   const [clientName, setClientName] = useState('')
@@ -179,19 +180,19 @@ export default function Home() {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
-      const img = new Image()
+      const imgElement = new window.Image()
       
-      img.onload = () => {
+      imgElement.onload = () => {
         // Calculate new dimensions while maintaining aspect ratio
-        const ratio = Math.min(maxWidth / img.width, maxWidth / img.height)
-        const newWidth = img.width * ratio
-        const newHeight = img.height * ratio
+        const ratio = Math.min(maxWidth / imgElement.width, maxWidth / imgElement.height)
+        const newWidth = imgElement.width * ratio
+        const newHeight = imgElement.height * ratio
         
         canvas.width = newWidth
         canvas.height = newHeight
         
         // Draw and compress the image
-        ctx?.drawImage(img, 0, 0, newWidth, newHeight)
+        ctx?.drawImage(imgElement, 0, 0, newWidth, newHeight)
         
         canvas.toBlob(
           (blob) => {
@@ -211,8 +212,8 @@ export default function Home() {
         )
       }
       
-      img.onerror = () => reject(new Error('Failed to load image for compression'))
-      img.src = URL.createObjectURL(file)
+      imgElement.onerror = () => reject(new Error('Failed to load image for compression'))
+      imgElement.src = URL.createObjectURL(file)
     })
   }
 
@@ -309,10 +310,18 @@ export default function Home() {
         {/* Hero Section */}
         <div className="text-center mb-8 md:mb-16 mobile-slide-in">
           {/* Logo/Brand */}
-          <div className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl md:rounded-3xl mb-6 md:mb-8 shadow-2xl transform hover:scale-105 transition-all duration-500 touch-target">
-            <svg className="w-8 h-8 md:w-12 md:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+          <div className="inline-flex items-center justify-center w-16 h-16 md:w-24 md:h-24 bg-gradient-to-br from-white via-gray-50 to-gray-100 rounded-2xl md:rounded-3xl mb-6 md:mb-8 shadow-2xl transform hover:scale-105 transition-all duration-500 touch-target overflow-hidden relative">
+            {/* Subtle gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-gray-50/50 via-white/50 to-gray-100/50"></div>
+            {/* Subtle blue accent */}
+            <div className="absolute inset-0 bg-gradient-to-tr from-blue-100/30 via-transparent to-purple-100/30"></div>
+            <Image 
+              src="/GoAwningIcon.jpg" 
+              alt="Go Awning Logo" 
+              width={48} 
+              height={48} 
+              className="w-20 h-20 md:w-18 md:h-18 object-contain relative z-10"
+            />
           </div>
 
           {/* Main Heading */}
@@ -332,7 +341,7 @@ export default function Home() {
           </p>
 
           {/* Stats */}
-          <div className="flex flex-wrap justify-center mobile-gap mb-12 md:mb-16">
+          {/* <div className="flex flex-wrap justify-center mobile-gap mb-12 md:mb-16">
             <div className="text-center">
               <div className="mobile-text-2xl md:text-3xl font-bold text-blue-400 mb-1 md:mb-2">500+</div>
               <div className="text-gray-400 mobile-text-sm">Businesses Cleaned</div>
@@ -345,7 +354,7 @@ export default function Home() {
               <div className="mobile-text-2xl md:text-3xl font-bold text-green-400 mb-1 md:mb-2">24hr</div>
               <div className="text-gray-400 mobile-text-sm">Response Time</div>
             </div>
-          </div>
+          </div> */}
         </div>
 
         {/* Main Form Card */}
@@ -353,11 +362,8 @@ export default function Home() {
           <div className="card p-6 md:p-12 mobile-slide-in">
             <div className="text-center mb-8 md:mb-12">
               <h2 className="mobile-text-2xl md:text-4xl font-bold text-white mb-3 md:mb-4">
-                Create Your Before & After Showcase
+                Your Awning: Before and After
               </h2>
-              <p className="text-gray-400 mobile-text-lg">
-                Upload your photos and generate a professional showcase in minutes
-              </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-8 md:space-y-10">
@@ -486,83 +492,6 @@ export default function Home() {
                   </div>
                 </div>
 
-                {/* Device-Specific Tips */}
-                <div className="text-center">
-                  <div className="glass rounded-xl p-4 md:p-6 max-w-3xl mx-auto">
-                    <div className="flex items-center justify-center mb-4">
-                      <svg className="w-6 h-6 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      <h4 className="text-white font-semibold mobile-text-lg">📸 Photo Upload Guide</h4>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-                      {/* Mobile Tips */}
-                      <div className="space-y-2">
-                        <h5 className="text-blue-400 font-semibold text-sm">📱 Mobile Devices</h5>
-                        <div className="space-y-1">
-                          <div className="flex items-start">
-                            <span className="text-blue-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Tap upload area to open camera</p>
-                          </div>
-                          <div className="flex items-start">
-                            <span className="text-blue-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Choose camera or gallery</p>
-                          </div>
-                          <div className="flex items-start">
-                            <span className="text-blue-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Ensure good lighting</p>
-                          </div>
-                          <div className="flex items-start">
-                            <span className="text-blue-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">iPhone: Use &quot;Most Compatible&quot; format in Settings</p>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {/* Desktop Tips */}
-                      <div className="space-y-2">
-                        <h5 className="text-purple-400 font-semibold text-sm">💻 Desktop/Laptop</h5>
-                        <div className="space-y-1">
-                          <div className="flex items-start">
-                            <span className="text-purple-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Click to browse files</p>
-                          </div>
-                          <div className="flex items-start">
-                            <span className="text-purple-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Drag & drop images</p>
-                          </div>
-                          {/* <div className="flex items-start">
-                            <span className="text-purple-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Use webcam if available</p>
-                          </div> */}
-                        </div>
-                      </div>
-                      
-                      {/* General Tips */}
-                      <div className="space-y-2">
-                        <h5 className="text-green-400 font-semibold text-sm">✨ Best Practices</h5>
-                        <div className="space-y-1">
-                          <div className="flex items-start">
-                            <span className="text-green-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Same angle for comparison</p>
-                          </div>
-                          <div className="flex items-start">
-                            <span className="text-green-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">High resolution images</p>
-                          </div>
-                          <div className="flex items-start">
-                            <span className="text-green-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Clear, well-lit photos</p>
-                          </div>
-                          <div className="flex items-start">
-                            <span className="text-green-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">Images auto-compressed for storage</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
               </div>
 
               {/* Submit Button */}

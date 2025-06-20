@@ -170,6 +170,7 @@ export default function ClientShowcase() {
                     BEFORE CLEANING
                   </div>
                   <div className="card p-4 md:p-6">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={clientData.beforeImage}
                       alt="Before awning cleaning"
@@ -189,6 +190,7 @@ export default function ClientShowcase() {
                     AFTER CLEANING
                   </div>
                   <div className="card p-4 md:p-6">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={clientData.afterImage}
                       alt="After awning cleaning"

@@ -353,7 +353,7 @@ export default function Home() {
                         <div>
                           <p className="text-white font-semibold mobile-text-lg">Upload Before Photo</p>
                           <p className="text-gray-400 mt-2 mobile-text-sm">Click to browse files or take photo</p>
-                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • iPhone: Use "Most Compatible" format</p>
+                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • iPhone: Use &quot;Most Compatible&quot; format</p>
                         </div>
                         {beforeImage && (
                           <div className="mt-4 p-3 bg-green-500/20 rounded-lg border border-green-500/30">
@@ -392,7 +392,7 @@ export default function Home() {
                         <div>
                           <p className="text-white font-semibold mobile-text-lg">Upload After Photo</p>
                           <p className="text-gray-400 mt-2 mobile-text-sm">Click to browse files or take photo</p>
-                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • iPhone: Use "Most Compatible" format</p>
+                          <p className="text-xs text-gray-500 mt-1">JPG, PNG, HEIC up to 10MB • iPhone: Use &quot;Most Compatible&quot; format</p>
                         </div>
                         {afterImage && (
                           <div className="mt-4 p-3 bg-green-500/20 rounded-lg border border-green-500/30">
@@ -432,7 +432,7 @@ export default function Home() {
                           </div>
                           <div className="flex items-start">
                             <span className="text-blue-400 mr-2 text-xs">•</span>
-                            <p className="text-gray-300 text-xs">iPhone: Use "Most Compatible" format in Settings</p>
+                            <p className="text-gray-300 text-xs">iPhone: Use &quot;Most Compatible&quot; format in Settings</p>
                           </div>
                         </div>
                       </div>

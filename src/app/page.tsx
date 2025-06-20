@@ -175,7 +175,7 @@ export default function Home() {
     }
   }
 
-  const compressImage = (file: File, maxWidth: number = 1200, quality: number = 0.8): Promise<File> => {
+  const compressImage = (file: File, maxWidth = 1200, quality = 0.8): Promise<File> => {
     return new Promise((resolve, reject) => {
       const canvas = document.createElement('canvas')
       const ctx = canvas.getContext('2d')
